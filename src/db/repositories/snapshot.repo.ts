@@ -99,6 +99,33 @@ export function getForwardsAggregated(
     .all(channelId, fromDate, toDate) as { date: string; total_forwards: number }[];
 }
 
+export function getPostBreakdown(
+  channelId: string,
+  fromDate: string,
+  toDate: string
+): { message_id: number; views: number; forwards: number; reactions: number; latest_at: string }[] {
+  return getDb()
+    .prepare(
+      `SELECT
+        message_id,
+        MAX(views) as views,
+        MAX(forwards) as forwards,
+        MAX(reactions) as reactions,
+        MAX(recorded_at) as latest_at
+       FROM post_snapshots
+       WHERE channel_id = ? AND recorded_at BETWEEN ? AND ?
+       GROUP BY message_id
+       ORDER BY views DESC`
+    )
+    .all(channelId, fromDate, toDate) as {
+      message_id: number;
+      views: number;
+      forwards: number;
+      reactions: number;
+      latest_at: string;
+    }[];
+}
+
 export function getLatestPostSnapshot(
   channelId: string,
   messageId: number

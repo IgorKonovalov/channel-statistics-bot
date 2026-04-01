@@ -26,12 +26,12 @@ MVP is complete (plan 001). The bot collects member count (every 2h) and post vi
 ### Plan 003: Dashboard Improvements
 **Priority: High** — usability essentials
 
-- [ ] Add date range picker (from/to inputs) that filters all charts
-- [ ] Add per-post breakdown page: table of posts with views, reactions, forwards
-- [ ] Add summary KPI cards at top of overview: total members, total views (30d), avg views/post
-- [ ] Responsive layout for mobile
-- [ ] Loading states for charts (spinner while fetching)
-- [ ] Extract shared CSS into a layout template (reintroduce `layout.ejs`)
+- [x] Add date range picker (from/to inputs) that filters all charts
+- [x] Add per-post breakdown page: table of posts with views, reactions, forwards
+- [x] Add summary KPI cards at top of overview: total members, total views (30d), avg views/post
+- [x] Responsive layout for mobile
+- [x] Loading states for charts (spinner while fetching)
+- [x] Extract shared CSS into a layout template (reintroduce `layout.ejs`)
 
 ### Plan 004: Testing
 **Priority: High** — no tests exist yet

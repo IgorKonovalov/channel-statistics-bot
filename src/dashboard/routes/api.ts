@@ -5,6 +5,7 @@ import {
   getViewsAggregated,
   getReactionsAggregated,
   getForwardsAggregated,
+  getPostBreakdown,
 } from '../../db/repositories/snapshot.repo';
 
 const router = Router();
@@ -57,6 +58,15 @@ router.get('/api/forwards', (req: Request, res: Response) => {
   const toParam = (req.query['to'] as string) ?? to;
 
   const data = getForwardsAggregated(config.channelId, fromParam, toParam);
+  res.json(data);
+});
+
+router.get('/api/posts', (req: Request, res: Response) => {
+  const { from, to } = defaultDateRange();
+  const fromParam = (req.query['from'] as string) ?? from;
+  const toParam = (req.query['to'] as string) ?? to;
+
+  const data = getPostBreakdown(config.channelId, fromParam, toParam);
   res.json(data);
 });
 

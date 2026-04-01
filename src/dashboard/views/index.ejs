@@ -1,43 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= channelTitle %> — Statistics</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f5f5;
-      color: #333;
-      padding: 20px;
-    }
-    .container { max-width: 1200px; margin: 0 auto; }
-    h1 { margin-bottom: 24px; font-size: 24px; }
-    .card {
-      background: #fff;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .card h2 { margin-bottom: 16px; font-size: 18px; color: #555; }
-    .chart-container { position: relative; height: 300px; }
-    .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: #999;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1><%= channelTitle %> — Statistics</h1>
+<%- include('layout', {
+  title: channelTitle + ' — Statistics',
+  channelTitle,
+  page: 'overview',
+  body: `
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Members</div>
+        <div class="kpi-value" id="kpiMembers">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Views (30d)</div>
+        <div class="kpi-value" id="kpiViews">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Avg Views / Post</div>
+        <div class="kpi-value" id="kpiAvgViews">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Reactions (30d)</div>
+        <div class="kpi-value" id="kpiReactions">—</div>
+      </div>
+    </div>
+
+    <div class="date-range">
+      <label>From</label>
+      <input type="date" id="dateFrom">
+      <label>To</label>
+      <input type="date" id="dateTo">
+      <button onclick="applyDateRange()">Apply</button>
+    </div>
 
     <div class="card">
       <h2>Member Count</h2>
-      <div class="chart-container">
+      <div class="loading" id="membersLoading"><div class="spinner"></div></div>
+      <div class="chart-container" style="display:none;">
         <canvas id="membersChart"></canvas>
       </div>
       <div id="membersEmpty" class="empty-state" style="display:none;">
@@ -47,7 +43,8 @@
 
     <div class="card">
       <h2>Daily Views</h2>
-      <div class="chart-container">
+      <div class="loading" id="viewsLoading"><div class="spinner"></div></div>
+      <div class="chart-container" style="display:none;">
         <canvas id="viewsChart"></canvas>
       </div>
       <div id="viewsEmpty" class="empty-state" style="display:none;">
@@ -57,7 +54,8 @@
 
     <div class="card">
       <h2>Daily Reactions</h2>
-      <div class="chart-container">
+      <div class="loading" id="reactionsLoading"><div class="spinner"></div></div>
+      <div class="chart-container" style="display:none;">
         <canvas id="reactionsChart"></canvas>
       </div>
       <div id="reactionsEmpty" class="empty-state" style="display:none;">
@@ -67,54 +65,116 @@
 
     <div class="card">
       <h2>Daily Forwards</h2>
-      <div class="chart-container">
+      <div class="loading" id="forwardsLoading"><div class="spinner"></div></div>
+      <div class="chart-container" style="display:none;">
         <canvas id="forwardsChart"></canvas>
       </div>
       <div id="forwardsEmpty" class="empty-state" style="display:none;">
         No forward data yet.
       </div>
     </div>
-  </div>
 
-  <script>
-    async function loadChart(url, canvasId, emptyId, label, valueKey, color) {
-      const res = await fetch(url);
-      const data = await res.json();
+    <script>
+      const charts = {};
 
-      if (data.length === 0) {
-        document.getElementById(canvasId).style.display = 'none';
-        document.getElementById(emptyId).style.display = 'block';
-        return;
+      // Default date range: last 30 days
+      const now = new Date();
+      const thirtyAgo = new Date();
+      thirtyAgo.setDate(now.getDate() - 30);
+      document.getElementById('dateFrom').value = thirtyAgo.toISOString().slice(0, 10);
+      document.getElementById('dateTo').value = now.toISOString().slice(0, 10);
+
+      function dateParams() {
+        const from = document.getElementById('dateFrom').value;
+        const to = document.getElementById('dateTo').value;
+        return 'from=' + encodeURIComponent(from + ' 00:00:00') + '&to=' + encodeURIComponent(to + ' 23:59:59');
       }
 
-      new Chart(document.getElementById(canvasId), {
-        type: 'line',
-        data: {
-          labels: data.map(d => d.date),
-          datasets: [{
-            label: label,
-            data: data.map(d => d[valueKey]),
-            borderColor: color,
-            backgroundColor: color + '20',
-            fill: true,
-            tension: 0.3,
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { display: true },
-            y: { beginAtZero: false }
-          }
-        }
-      });
-    }
+      async function loadChart(url, canvasId, emptyId, loadingId, label, valueKey, color) {
+        const loadingEl = document.getElementById(loadingId);
+        const canvasEl = document.getElementById(canvasId);
+        const containerEl = canvasEl.parentElement;
+        const emptyEl = document.getElementById(emptyId);
 
-    loadChart('/api/members', 'membersChart', 'membersEmpty', 'Members', 'count', '#3b82f6');
-    loadChart('/api/views', 'viewsChart', 'viewsEmpty', 'Views', 'total_views', '#10b981');
-    loadChart('/api/reactions', 'reactionsChart', 'reactionsEmpty', 'Reactions', 'total_reactions', '#f59e0b');
-    loadChart('/api/forwards', 'forwardsChart', 'forwardsEmpty', 'Forwards', 'total_forwards', '#8b5cf6');
-  </script>
-</body>
-</html>
+        loadingEl.style.display = 'block';
+        containerEl.style.display = 'none';
+        emptyEl.style.display = 'none';
+
+        const res = await fetch(url + '?' + dateParams());
+        const data = await res.json();
+
+        loadingEl.style.display = 'none';
+
+        if (data.length === 0) {
+          emptyEl.style.display = 'block';
+          return null;
+        }
+
+        containerEl.style.display = 'block';
+
+        if (charts[canvasId]) {
+          charts[canvasId].destroy();
+        }
+
+        charts[canvasId] = new Chart(canvasEl, {
+          type: 'line',
+          data: {
+            labels: data.map(d => d.date),
+            datasets: [{
+              label: label,
+              data: data.map(d => d[valueKey]),
+              borderColor: color,
+              backgroundColor: color + '20',
+              fill: true,
+              tension: 0.3,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { display: true },
+              y: { beginAtZero: false }
+            }
+          }
+        });
+
+        return data;
+      }
+
+      async function loadKPIs() {
+        const [members, views, reactions] = await Promise.all([
+          fetch('/api/members?' + dateParams()).then(r => r.json()),
+          fetch('/api/views?' + dateParams()).then(r => r.json()),
+          fetch('/api/reactions?' + dateParams()).then(r => r.json()),
+        ]);
+
+        const latestMembers = members.length > 0 ? members[members.length - 1].count : 0;
+        const totalViews = views.reduce((sum, d) => sum + d.total_views, 0);
+        const totalReactions = reactions.reduce((sum, d) => sum + d.total_reactions, 0);
+
+        // Avg views per post: total views / number of days with data (rough approximation)
+        const avgViews = views.length > 0 ? Math.round(totalViews / views.length) : 0;
+
+        document.getElementById('kpiMembers').textContent = latestMembers.toLocaleString();
+        document.getElementById('kpiViews').textContent = totalViews.toLocaleString();
+        document.getElementById('kpiAvgViews').textContent = avgViews.toLocaleString();
+        document.getElementById('kpiReactions').textContent = totalReactions.toLocaleString();
+      }
+
+      function loadAll() {
+        loadKPIs();
+        loadChart('/api/members', 'membersChart', 'membersEmpty', 'membersLoading', 'Members', 'count', '#3b82f6');
+        loadChart('/api/views', 'viewsChart', 'viewsEmpty', 'viewsLoading', 'Views', 'total_views', '#10b981');
+        loadChart('/api/reactions', 'reactionsChart', 'reactionsEmpty', 'reactionsLoading', 'Reactions', 'total_reactions', '#f59e0b');
+        loadChart('/api/forwards', 'forwardsChart', 'forwardsEmpty', 'forwardsLoading', 'Forwards', 'total_forwards', '#8b5cf6');
+      }
+
+      function applyDateRange() {
+        loadAll();
+      }
+
+      loadAll();
+    </script>
+  `
+}) %>

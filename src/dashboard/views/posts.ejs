@@ -1,0 +1,85 @@
+<%- include('layout', {
+  title: channelTitle + ' — Posts',
+  channelTitle,
+  page: 'posts',
+  body: `
+    <div class="date-range">
+      <label>From</label>
+      <input type="date" id="dateFrom">
+      <label>To</label>
+      <input type="date" id="dateTo">
+      <button onclick="loadPosts()">Apply</button>
+    </div>
+
+    <div class="card">
+      <h2>Per-Post Breakdown</h2>
+      <div class="loading" id="postsLoading"><div class="spinner"></div></div>
+      <div id="postsEmpty" class="empty-state" style="display:none;">
+        No post data in this date range.
+      </div>
+      <div class="table-wrapper" id="postsTable" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>Post ID</th>
+              <th class="text-right">Views</th>
+              <th class="text-right">Forwards</th>
+              <th class="text-right">Reactions</th>
+              <th>Last Updated</th>
+            </tr>
+          </thead>
+          <tbody id="postsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      const now = new Date();
+      const thirtyAgo = new Date();
+      thirtyAgo.setDate(now.getDate() - 30);
+      document.getElementById('dateFrom').value = thirtyAgo.toISOString().slice(0, 10);
+      document.getElementById('dateTo').value = now.toISOString().slice(0, 10);
+
+      function dateParams() {
+        const from = document.getElementById('dateFrom').value;
+        const to = document.getElementById('dateTo').value;
+        return 'from=' + encodeURIComponent(from + ' 00:00:00') + '&to=' + encodeURIComponent(to + ' 23:59:59');
+      }
+
+      async function loadPosts() {
+        const loading = document.getElementById('postsLoading');
+        const empty = document.getElementById('postsEmpty');
+        const table = document.getElementById('postsTable');
+        const tbody = document.getElementById('postsBody');
+
+        loading.style.display = 'block';
+        empty.style.display = 'none';
+        table.style.display = 'none';
+
+        const res = await fetch('/api/posts?' + dateParams());
+        const data = await res.json();
+
+        loading.style.display = 'none';
+
+        if (data.length === 0) {
+          empty.style.display = 'block';
+          return;
+        }
+
+        tbody.innerHTML = data.map(function(p) {
+          return '<tr>'
+            + '<td>' + p.message_id + '</td>'
+            + '<td class="text-right">' + p.views.toLocaleString() + '</td>'
+            + '<td class="text-right">' + p.forwards.toLocaleString() + '</td>'
+            + '<td class="text-right">' + p.reactions.toLocaleString() + '</td>'
+            + '<td class="text-muted">' + p.latest_at + '</td>'
+            + '</tr>';
+        }).join('');
+
+        table.style.display = 'block';
+      }
+
+      loadPosts();
+    </script>
+  `
+}) %>
