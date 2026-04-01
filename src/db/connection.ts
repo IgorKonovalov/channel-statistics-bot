@@ -17,6 +17,10 @@ export function getDb(): Database.Database {
   return db;
 }
 
+export function setDb(instance: Database.Database): void {
+  db = instance;
+}
+
 export function closeDb(): void {
   if (db) {
     db.close();

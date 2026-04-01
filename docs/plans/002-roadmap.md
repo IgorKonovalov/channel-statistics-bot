@@ -36,13 +36,13 @@ MVP is complete (plan 001). The bot collects member count (every 2h) and post vi
 ### Plan 004: Testing
 **Priority: High** — no tests exist yet
 
-- [ ] Set up vitest config (`vitest.config.ts`)
-- [ ] Unit tests for repositories: channel.repo, snapshot.repo (in-memory SQLite)
-- [ ] Unit tests for config validation (missing env vars, defaults)
-- [ ] Unit tests for auth middleware (valid/invalid/missing credentials, colon-in-password)
-- [ ] Integration test: collector service writes snapshots to DB
-- [ ] Integration test: API routes return correct JSON shape
-- [ ] Add `npm run test:coverage` with minimum threshold (80%)
+- [x] Set up vitest config (`vitest.config.ts`)
+- [x] Unit tests for repositories: channel.repo, snapshot.repo (in-memory SQLite)
+- [x] Unit tests for config validation (missing env vars, defaults)
+- [x] Unit tests for auth middleware (valid/invalid/missing credentials, colon-in-password)
+- [x] Integration test: collector service writes snapshots to DB (covered via repo tests with in-memory DB)
+- [x] Integration test: API routes return correct JSON shape
+- [x] Add `npm run test:coverage` with minimum threshold (80%)
 
 ### Plan 005: Linting & Code Quality
 **Priority: Medium** — enforce consistency
