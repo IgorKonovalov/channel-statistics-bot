@@ -10,7 +10,7 @@ export function upsertChannel(id: string, title: string): void {
   getDb()
     .prepare(
       `INSERT INTO channels (id, title) VALUES (?, ?)
-       ON CONFLICT(id) DO UPDATE SET title = excluded.title`
+       ON CONFLICT(id) DO UPDATE SET title = excluded.title`,
     )
     .run(id, title);
 }

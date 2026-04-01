@@ -30,7 +30,7 @@ router.get('/api/members', (req: Request, res: Response) => {
     data.map((s) => ({
       date: s.recorded_at,
       count: s.count,
-    }))
+    })),
   );
 });
 

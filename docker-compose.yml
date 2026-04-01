@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     env_file: .env
     ports:
-      - "${DASHBOARD_PORT:-3000}:3000"
+      - '${DASHBOARD_PORT:-3000}:3000'
     volumes:
       - bot-data:/app/data
 

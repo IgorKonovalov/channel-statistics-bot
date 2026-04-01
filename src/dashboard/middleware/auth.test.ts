@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import type { Request, Response, NextFunction } from 'express';
 
 // Mock config before importing auth
@@ -88,7 +88,7 @@ describe('basicAuth', () => {
 
   it('returns 401 when credentials have no colon', () => {
     const { req, res, next } = createMockReqRes(
-      'Basic ' + Buffer.from('nocolon').toString('base64')
+      'Basic ' + Buffer.from('nocolon').toString('base64'),
     );
     basicAuth(req, res, next);
     expect(res.status).toHaveBeenCalledWith(401);

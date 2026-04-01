@@ -1,4 +1,4 @@
-import { config } from './config';
+import './config';
 import { getDb, closeDb } from './db/connection';
 import { runMigrations } from './db/schema';
 import { createBot } from './bot';
@@ -13,10 +13,10 @@ async function main(): Promise<void> {
   runMigrations(db);
   console.log('[app] Database ready');
 
-  // Start bot
+  // Start bot (launch returns a promise that resolves when polling starts)
   const bot = createBot();
-  await bot.launch();
-  console.log('[app] Bot started');
+  bot.launch().then(() => console.log('[app] Bot polling started'));
+  console.log('[app] Bot starting...');
 
   // Start data collection
   const collector = startCollector(bot);
@@ -25,7 +25,7 @@ async function main(): Promise<void> {
   await startDashboard();
 
   // Graceful shutdown
-  const shutdown = (signal: string) => {
+  const shutdown = (signal: string): void => {
     console.log(`[app] Received ${signal}, shutting down...`);
     collector.stop();
     bot.stop(signal);

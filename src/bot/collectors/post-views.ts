@@ -28,7 +28,7 @@ function processPost(post: ChannelPostLike, reactions: number = 0): void {
 
   insertPostSnapshot(config.channelId, post.message_id, views, forwards, reactions);
   console.log(
-    `[collector] Post ${post.message_id} — views: ${views}, forwards: ${forwards}, reactions: ${reactions}`
+    `[collector] Post ${post.message_id} — views: ${views}, forwards: ${forwards}, reactions: ${reactions}`,
   );
 }
 
@@ -61,10 +61,10 @@ export function registerPostListener(bot: Telegraf): void {
       reactionCount.message_id,
       latest?.views ?? 0,
       latest?.forwards ?? 0,
-      totalReactions
+      totalReactions,
     );
     console.log(
-      `[collector] Post ${reactionCount.message_id} — reactions updated: ${totalReactions}`
+      `[collector] Post ${reactionCount.message_id} — reactions updated: ${totalReactions}`,
     );
   });
 }

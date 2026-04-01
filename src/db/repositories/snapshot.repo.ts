@@ -26,13 +26,13 @@ export function insertMemberSnapshot(channelId: string, count: number): void {
 export function getMemberSnapshots(
   channelId: string,
   fromDate: string,
-  toDate: string
+  toDate: string,
 ): MemberSnapshot[] {
   return getDb()
     .prepare(
       `SELECT * FROM member_snapshots
        WHERE channel_id = ? AND recorded_at BETWEEN ? AND ?
-       ORDER BY recorded_at ASC`
+       ORDER BY recorded_at ASC`,
     )
     .all(channelId, fromDate, toDate) as MemberSnapshot[];
 }
@@ -42,11 +42,11 @@ export function insertPostSnapshot(
   messageId: number,
   views: number,
   forwards: number,
-  reactions: number
+  reactions: number,
 ): void {
   getDb()
     .prepare(
-      'INSERT INTO post_snapshots (channel_id, message_id, views, forwards, reactions) VALUES (?, ?, ?, ?, ?)'
+      'INSERT INTO post_snapshots (channel_id, message_id, views, forwards, reactions) VALUES (?, ?, ?, ?, ?)',
     )
     .run(channelId, messageId, views, forwards, reactions);
 }
@@ -54,7 +54,7 @@ export function insertPostSnapshot(
 export function getViewsAggregated(
   channelId: string,
   fromDate: string,
-  toDate: string
+  toDate: string,
 ): { date: string; total_views: number }[] {
   return getDb()
     .prepare(
@@ -62,7 +62,7 @@ export function getViewsAggregated(
        FROM post_snapshots
        WHERE channel_id = ? AND recorded_at BETWEEN ? AND ?
        GROUP BY date(recorded_at)
-       ORDER BY date ASC`
+       ORDER BY date ASC`,
     )
     .all(channelId, fromDate, toDate) as { date: string; total_views: number }[];
 }
@@ -70,7 +70,7 @@ export function getViewsAggregated(
 export function getReactionsAggregated(
   channelId: string,
   fromDate: string,
-  toDate: string
+  toDate: string,
 ): { date: string; total_reactions: number }[] {
   return getDb()
     .prepare(
@@ -78,7 +78,7 @@ export function getReactionsAggregated(
        FROM post_snapshots
        WHERE channel_id = ? AND recorded_at BETWEEN ? AND ?
        GROUP BY date(recorded_at)
-       ORDER BY date ASC`
+       ORDER BY date ASC`,
     )
     .all(channelId, fromDate, toDate) as { date: string; total_reactions: number }[];
 }
@@ -86,7 +86,7 @@ export function getReactionsAggregated(
 export function getForwardsAggregated(
   channelId: string,
   fromDate: string,
-  toDate: string
+  toDate: string,
 ): { date: string; total_forwards: number }[] {
   return getDb()
     .prepare(
@@ -94,7 +94,7 @@ export function getForwardsAggregated(
        FROM post_snapshots
        WHERE channel_id = ? AND recorded_at BETWEEN ? AND ?
        GROUP BY date(recorded_at)
-       ORDER BY date ASC`
+       ORDER BY date ASC`,
     )
     .all(channelId, fromDate, toDate) as { date: string; total_forwards: number }[];
 }
@@ -102,7 +102,7 @@ export function getForwardsAggregated(
 export function getPostBreakdown(
   channelId: string,
   fromDate: string,
-  toDate: string
+  toDate: string,
 ): { message_id: number; views: number; forwards: number; reactions: number; latest_at: string }[] {
   return getDb()
     .prepare(
@@ -115,26 +115,26 @@ export function getPostBreakdown(
        FROM post_snapshots
        WHERE channel_id = ? AND recorded_at BETWEEN ? AND ?
        GROUP BY message_id
-       ORDER BY views DESC`
+       ORDER BY views DESC`,
     )
     .all(channelId, fromDate, toDate) as {
-      message_id: number;
-      views: number;
-      forwards: number;
-      reactions: number;
-      latest_at: string;
-    }[];
+    message_id: number;
+    views: number;
+    forwards: number;
+    reactions: number;
+    latest_at: string;
+  }[];
 }
 
 export function getLatestPostSnapshot(
   channelId: string,
-  messageId: number
+  messageId: number,
 ): PostSnapshot | undefined {
   return getDb()
     .prepare(
       `SELECT * FROM post_snapshots
        WHERE channel_id = ? AND message_id = ?
-       ORDER BY recorded_at DESC LIMIT 1`
+       ORDER BY recorded_at DESC LIMIT 1`,
     )
     .get(channelId, messageId) as PostSnapshot | undefined;
 }

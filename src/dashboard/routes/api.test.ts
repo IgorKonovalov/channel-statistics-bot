@@ -26,7 +26,10 @@ function createApp() {
 }
 
 // Use node's built-in fetch to test express routes in-process
-async function request(app: express.Express, path: string): Promise<{ status: number; body: unknown }> {
+async function request(
+  app: express.Express,
+  path: string,
+): Promise<{ status: number; body: unknown }> {
   return new Promise((resolve, reject) => {
     const server = app.listen(0, () => {
       const addr = server.address();

@@ -47,20 +47,14 @@ MVP is complete (plan 001). The bot collects member count (every 2h) and post vi
 ### Plan 005: Linting & Code Quality
 **Priority: Medium** — enforce consistency
 
-- [ ] Add ESLint with `@typescript-eslint` + recommended config
-- [ ] Add Prettier for formatting
-- [ ] Add npm scripts: `lint`, `lint:fix`, `format`
-- [ ] Add pre-commit hook via husky + lint-staged
-- [ ] Fix any existing lint issues
+- [x] Add ESLint with `@typescript-eslint` + recommended config
+- [x] Add Prettier for formatting
+- [x] Add npm scripts: `lint`, `lint:fix`, `format`
+- [x] Add pre-commit hook via husky + lint-staged
+- [x] Pin all dependencies to exact versions (remove `^` prefixes)
+- [x] Fix any existing lint issues
 
-### Plan 006: Multi-Channel Support
-**Priority: Medium** — scale beyond single channel
-
-- [ ] Change `CHANNEL_ID` config to `CHANNEL_IDS` (comma-separated list)
-- [ ] Update collector to iterate over all channels
-- [ ] Update dashboard to show channel selector dropdown
-- [ ] Per-channel routes: `/channel/:id`, `/api/:channelId/members`, etc.
-- [ ] Update DB queries to handle multiple channels cleanly
+### ~~Plan 006: Multi-Channel Support~~ — DROPPED
 
 ### Plan 007: Production Hardening
 **Priority: Medium** — reliability for long-running deployment
@@ -71,36 +65,22 @@ MVP is complete (plan 001). The bot collects member count (every 2h) and post vi
 - [ ] Add DB backup strategy (periodic SQLite `.backup()` to a file)
 - [ ] Add rate limit middleware on dashboard routes
 - [ ] Review Docker setup: non-root user, memory limits, log rotation
-
-### Plan 008: Deployment Automation
-**Priority: Low** — convenience for ongoing deploys
-
-- [ ] GitHub Actions CI: typecheck + lint + test on push
-- [ ] GitHub Actions CD: build Docker image, SSH deploy to VPS on push to master
 - [ ] Add deploy script (`scripts/deploy.sh`) for manual SSH deploys
-- [ ] Add `.env.production.example` with production-specific guidance
+
+### ~~Plan 008: Deployment Automation~~ — DROPPED (deploy script moved to 007)
 
 ## Suggested Order of Execution
 
 ```
 002 Reposts & Reactions  ──┐
-003 Dashboard Improvements ─┼── can be parallelized
+003 Dashboard Improvements ─┼── done
 004 Testing ────────────────┘
         │
 005 Linting & Code Quality
         │
-006 Multi-Channel Support
-        │
-007 Production Hardening
-        │
-008 Deployment Automation
+007 Production Hardening (includes deploy script)
 ```
-
-Plans 002, 003, and 004 are independent and can be worked on in any order.
-Plans 005–008 build on a stable, tested codebase and should come after.
 
 ## Risks
 
 - **Telegram `message_reaction_count` availability** — requires bot API 7.0+; need to verify Telegraf v4 supports it. If not, reactions tracking may need a Telegraf update or raw API calls.
-- **Multi-channel increases DB load** — with many channels and frequent posts, SQLite may become a bottleneck. Monitor and consider PostgreSQL migration if needed (unlikely for <10 channels).
-- **No tests yet** — any refactoring before plan 004 carries regression risk. Recommend starting 004 early.
