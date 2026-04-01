@@ -36,6 +36,12 @@ const MIGRATIONS = [
         ON post_snapshots(channel_id, message_id);
     `,
   },
+  {
+    version: 2,
+    up: `
+      ALTER TABLE post_snapshots ADD COLUMN reactions INTEGER NOT NULL DEFAULT 0;
+    `,
+  },
 ];
 
 export function runMigrations(db: Database.Database): void {

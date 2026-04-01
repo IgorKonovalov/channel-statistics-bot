@@ -54,10 +54,30 @@
         No view data yet. Post something in the channel to start tracking.
       </div>
     </div>
+
+    <div class="card">
+      <h2>Daily Reactions</h2>
+      <div class="chart-container">
+        <canvas id="reactionsChart"></canvas>
+      </div>
+      <div id="reactionsEmpty" class="empty-state" style="display:none;">
+        No reaction data yet.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Daily Forwards</h2>
+      <div class="chart-container">
+        <canvas id="forwardsChart"></canvas>
+      </div>
+      <div id="forwardsEmpty" class="empty-state" style="display:none;">
+        No forward data yet.
+      </div>
+    </div>
   </div>
 
   <script>
-    async function loadChart(url, canvasId, emptyId, label, color) {
+    async function loadChart(url, canvasId, emptyId, label, valueKey, color) {
       const res = await fetch(url);
       const data = await res.json();
 
@@ -73,7 +93,7 @@
           labels: data.map(d => d.date),
           datasets: [{
             label: label,
-            data: data.map(d => d.count ?? d.total_views),
+            data: data.map(d => d[valueKey]),
             borderColor: color,
             backgroundColor: color + '20',
             fill: true,
@@ -91,8 +111,10 @@
       });
     }
 
-    loadChart('/api/members', 'membersChart', 'membersEmpty', 'Members', '#3b82f6');
-    loadChart('/api/views', 'viewsChart', 'viewsEmpty', 'Views', '#10b981');
+    loadChart('/api/members', 'membersChart', 'membersEmpty', 'Members', 'count', '#3b82f6');
+    loadChart('/api/views', 'viewsChart', 'viewsEmpty', 'Views', 'total_views', '#10b981');
+    loadChart('/api/reactions', 'reactionsChart', 'reactionsEmpty', 'Reactions', 'total_reactions', '#f59e0b');
+    loadChart('/api/forwards', 'forwardsChart', 'forwardsEmpty', 'Forwards', 'total_forwards', '#8b5cf6');
   </script>
 </body>
 </html>

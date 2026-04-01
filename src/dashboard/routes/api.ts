@@ -1,6 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { config } from '../../config';
-import { getMemberSnapshots, getViewsAggregated } from '../../db/repositories/snapshot.repo';
+import {
+  getMemberSnapshots,
+  getViewsAggregated,
+  getReactionsAggregated,
+  getForwardsAggregated,
+} from '../../db/repositories/snapshot.repo';
 
 const router = Router();
 
@@ -34,6 +39,24 @@ router.get('/api/views', (req: Request, res: Response) => {
   const toParam = (req.query['to'] as string) ?? to;
 
   const data = getViewsAggregated(config.channelId, fromParam, toParam);
+  res.json(data);
+});
+
+router.get('/api/reactions', (req: Request, res: Response) => {
+  const { from, to } = defaultDateRange();
+  const fromParam = (req.query['from'] as string) ?? from;
+  const toParam = (req.query['to'] as string) ?? to;
+
+  const data = getReactionsAggregated(config.channelId, fromParam, toParam);
+  res.json(data);
+});
+
+router.get('/api/forwards', (req: Request, res: Response) => {
+  const { from, to } = defaultDateRange();
+  const fromParam = (req.query['from'] as string) ?? from;
+  const toParam = (req.query['to'] as string) ?? to;
+
+  const data = getForwardsAggregated(config.channelId, fromParam, toParam);
   res.json(data);
 });
 
