@@ -24,5 +24,4 @@ export const config = {
   },
   dbPath: optionalEnv('DB_PATH', './data/stats.db'),
   collectionIntervalMs: 2 * 60 * 60 * 1000, // 2 hours
-  viewsCheckIntervalMs: 30 * 60 * 1000, // 30 minutes
 } as const;

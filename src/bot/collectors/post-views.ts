@@ -2,53 +2,33 @@ import { Context, Telegraf } from 'telegraf';
 import { config } from '../../config';
 import { insertPostSnapshot, getLatestPostSnapshot } from '../../db/repositories/snapshot.repo';
 
-const trackedMessageIds = new Set<number>();
+interface ChannelPostLike {
+  chat: { id: number };
+  message_id: number;
+  views?: number;
+  forward_date?: number;
+}
+
+function processPost(post: ChannelPostLike): void {
+  const chatId = post.chat.id.toString();
+  if (chatId !== config.channelId) return;
+
+  const views = post.views ?? 0;
+  const forwards = post.forward_date ? 1 : 0;
+
+  const latest = getLatestPostSnapshot(config.channelId, post.message_id);
+  if (latest && latest.views === views) return;
+
+  insertPostSnapshot(config.channelId, post.message_id, views, forwards);
+  console.log(`[collector] Post ${post.message_id} — views: ${views}`);
+}
 
 export function registerPostListener(bot: Telegraf): void {
   bot.on('channel_post', (ctx: Context) => {
-    const post = ctx.channelPost;
-    if (!post) return;
-
-    const chatId = post.chat.id.toString();
-    if (chatId !== config.channelId) return;
-
-    trackedMessageIds.add(post.message_id);
-
-    const views = 'views' in post ? ((post as Record<string, unknown>).views as number ?? 0) : 0;
-    const forwards = 'forward_date' in post ? 1 : 0;
-
-    insertPostSnapshot(config.channelId, post.message_id, views, forwards);
-    console.log(`[collector] New post ${post.message_id} tracked (views: ${views})`);
+    if (ctx.channelPost) processPost(ctx.channelPost as unknown as ChannelPostLike);
   });
-}
 
-export async function refreshPostViews(bot: Telegraf): Promise<void> {
-  if (trackedMessageIds.size === 0) return;
-
-  for (const messageId of trackedMessageIds) {
-    try {
-      const forwarded = await bot.telegram.forwardMessage(
-        config.channelId,
-        config.channelId,
-        messageId
-      );
-
-      const views = 'views' in forwarded ? ((forwarded as { views?: number }).views ?? 0) : 0;
-
-      const latest = getLatestPostSnapshot(config.channelId, messageId);
-      const lastViews = latest?.views ?? 0;
-
-      if (views !== lastViews) {
-        insertPostSnapshot(config.channelId, messageId, views, 0);
-        console.log(`[collector] Updated views for post ${messageId}: ${views}`);
-      }
-
-      // Delete the forwarded copy
-      await bot.telegram.deleteMessage(config.channelId, forwarded.message_id);
-    } catch (error) {
-      console.error(`[collector] Failed to refresh views for post ${messageId}:`, error);
-      // If message is too old or deleted, stop tracking it
-      trackedMessageIds.delete(messageId);
-    }
-  }
+  bot.on('edited_channel_post', (ctx: Context) => {
+    if (ctx.editedChannelPost) processPost(ctx.editedChannelPost as unknown as ChannelPostLike);
+  });
 }
