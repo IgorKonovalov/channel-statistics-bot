@@ -1,6 +1,7 @@
 import { Context, Telegraf } from 'telegraf';
 import { config } from '../../config';
 import { logger } from '../../logger';
+import { ensureChannel } from '../../db/repositories/channel.repo';
 import { insertPostSnapshot, getLatestPostSnapshot } from '../../db/repositories/snapshot.repo';
 
 interface ChannelPostLike {
@@ -27,6 +28,7 @@ function processPost(post: ChannelPostLike, reactions: number = 0): void {
     return;
   }
 
+  ensureChannel(config.channelId);
   insertPostSnapshot(config.channelId, post.message_id, views, forwards, reactions);
   logger.info({ postId: post.message_id, views, forwards, reactions }, 'Post snapshot saved');
 }
@@ -55,6 +57,7 @@ export function registerPostListener(bot: Telegraf): void {
     const totalReactions = reactionCount.reactions.reduce((sum, r) => sum + r.total_count, 0);
 
     const latest = getLatestPostSnapshot(config.channelId, reactionCount.message_id);
+    ensureChannel(config.channelId);
     insertPostSnapshot(
       config.channelId,
       reactionCount.message_id,
