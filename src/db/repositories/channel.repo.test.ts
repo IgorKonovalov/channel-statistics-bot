@@ -1,4 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
+vi.mock('../../config', () => ({
+  config: {
+    botToken: 'test',
+    channelId: '-100123',
+    dashboard: { user: 'admin', password: 'secret', port: 3000 },
+    dbPath: ':memory:',
+    logLevel: 'silent',
+    collectionIntervalMs: 7200000,
+  },
+}));
+
 import { setupTestDb, teardownTestDb } from '../test-helper';
 import { upsertChannel, getChannel } from './channel.repo';
 
