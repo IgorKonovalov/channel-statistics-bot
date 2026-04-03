@@ -16,7 +16,11 @@ async function main(): Promise<void> {
 
   // Start bot (launch returns a promise that resolves when polling starts)
   const bot = createBot();
-  bot.launch().then(() => logger.info('Bot polling started'));
+  bot
+    .launch({
+      allowedUpdates: ['channel_post', 'edited_channel_post', 'message_reaction_count' as never],
+    })
+    .then(() => logger.info('Bot polling started'));
   logger.info('Bot starting...');
 
   // Start data collection
