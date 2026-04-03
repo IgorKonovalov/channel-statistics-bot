@@ -43,6 +43,20 @@ const MIGRATIONS = [
       ALTER TABLE post_snapshots ADD COLUMN reactions INTEGER NOT NULL DEFAULT 0;
     `,
   },
+  {
+    version: 3,
+    up: `
+      CREATE TABLE IF NOT EXISTS posts (
+        channel_id  TEXT NOT NULL REFERENCES channels(id),
+        message_id  INTEGER NOT NULL,
+        text        TEXT NOT NULL DEFAULT '',
+        post_date   TEXT NOT NULL,
+        post_url    TEXT NOT NULL DEFAULT '',
+        photo_file_id TEXT,
+        PRIMARY KEY (channel_id, message_id)
+      );
+    `,
+  },
 ];
 
 export function runMigrations(db: Database.Database): void {

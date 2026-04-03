@@ -2,13 +2,18 @@ import { Context, Telegraf } from 'telegraf';
 import { config } from '../../config';
 import { logger } from '../../logger';
 import { ensureChannel } from '../../db/repositories/channel.repo';
+import { upsertPost } from '../../db/repositories/post.repo';
 import { insertPostSnapshot, getLatestPostSnapshot } from '../../db/repositories/snapshot.repo';
 
 interface ChannelPostLike {
-  chat: { id: number };
+  chat: { id: number; username?: string };
   message_id: number;
   views?: number;
   forward_count?: number;
+  text?: string;
+  caption?: string;
+  date?: number;
+  photo?: { file_id: string }[];
 }
 
 function processPost(post: ChannelPostLike, reactions: number = 0): void {
@@ -29,6 +34,14 @@ function processPost(post: ChannelPostLike, reactions: number = 0): void {
   }
 
   ensureChannel(config.channelId);
+
+  const postText = (post.text ?? post.caption ?? '').slice(0, 200);
+  const postDate = post.date ? new Date(post.date * 1000).toISOString() : new Date().toISOString();
+  const username = post.chat.username;
+  const postUrl = username ? `https://t.me/${username}/${post.message_id}` : '';
+  const photoFileId = post.photo?.length ? post.photo[post.photo.length - 1]?.file_id : undefined;
+
+  upsertPost(config.channelId, post.message_id, postText, postDate, postUrl, photoFileId);
   insertPostSnapshot(config.channelId, post.message_id, views, forwards, reactions);
   logger.info({ postId: post.message_id, views, forwards, reactions }, 'Post snapshot saved');
 }

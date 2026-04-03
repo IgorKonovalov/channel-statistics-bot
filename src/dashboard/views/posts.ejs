@@ -8,6 +8,13 @@
       <input type="date" id="dateFrom">
       <label>To</label>
       <input type="date" id="dateTo">
+      <label>Sort by</label>
+      <select id="sortBy" onchange="loadPosts()">
+        <option value="views">Views</option>
+        <option value="forwards">Forwards</option>
+        <option value="reactions">Reactions</option>
+        <option value="date">Date</option>
+      </select>
       <button onclick="loadPosts()">Apply</button>
     </div>
 
@@ -21,11 +28,11 @@
         <table>
           <thead>
             <tr>
-              <th>Post ID</th>
+              <th>Post</th>
               <th class="text-right">Views</th>
               <th class="text-right">Forwards</th>
               <th class="text-right">Reactions</th>
-              <th>Last Updated</th>
+              <th>Date</th>
             </tr>
           </thead>
           <tbody id="postsBody"></tbody>
@@ -43,21 +50,35 @@
       function dateParams() {
         const from = document.getElementById('dateFrom').value;
         const to = document.getElementById('dateTo').value;
-        return 'from=' + encodeURIComponent(from + ' 00:00:00') + '&to=' + encodeURIComponent(to + ' 23:59:59');
+        const sort = document.getElementById('sortBy').value;
+        return 'from=' + encodeURIComponent(from + ' 00:00:00')
+          + '&to=' + encodeURIComponent(to + ' 23:59:59')
+          + '&sort=' + encodeURIComponent(sort);
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function formatDate(isoStr) {
+        if (!isoStr) return '';
+        var d = new Date(isoStr);
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
       }
 
       async function loadPosts() {
-        const loading = document.getElementById('postsLoading');
-        const empty = document.getElementById('postsEmpty');
-        const table = document.getElementById('postsTable');
-        const tbody = document.getElementById('postsBody');
+        var loading = document.getElementById('postsLoading');
+        var empty = document.getElementById('postsEmpty');
+        var table = document.getElementById('postsTable');
+        var tbody = document.getElementById('postsBody');
 
         loading.style.display = 'block';
         empty.style.display = 'none';
         table.style.display = 'none';
 
-        const res = await fetch('/api/posts?' + dateParams());
-        const data = await res.json();
+        var res = await fetch('/api/posts?' + dateParams());
+        var data = await res.json();
 
         loading.style.display = 'none';
 
@@ -67,12 +88,22 @@
         }
 
         tbody.innerHTML = data.map(function(p) {
+          var preview = escapeHtml(p.text) || '<span class="text-muted">No text</span>';
+          var postCell;
+          if (p.post_url) {
+            postCell = '<a href="' + escapeHtml(p.post_url) + '" target="_blank" rel="noopener">#' + p.message_id + '</a>'
+              + '<div class="post-preview">' + preview + '</div>';
+          } else {
+            postCell = '#' + p.message_id
+              + '<div class="post-preview">' + preview + '</div>';
+          }
+
           return '<tr>'
-            + '<td>' + p.message_id + '</td>'
+            + '<td>' + postCell + '</td>'
             + '<td class="text-right">' + p.views.toLocaleString() + '</td>'
             + '<td class="text-right">' + p.forwards.toLocaleString() + '</td>'
             + '<td class="text-right">' + p.reactions.toLocaleString() + '</td>'
-            + '<td class="text-muted">' + p.latest_at + '</td>'
+            + '<td class="text-muted">' + formatDate(p.post_date) + '</td>'
             + '</tr>';
         }).join('');
 

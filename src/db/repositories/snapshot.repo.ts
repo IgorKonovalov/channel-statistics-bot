@@ -99,31 +99,49 @@ export function getForwardsAggregated(
     .all(channelId, fromDate, toDate) as { date: string; total_forwards: number }[];
 }
 
+export interface PostBreakdownRow {
+  message_id: number;
+  views: number;
+  forwards: number;
+  reactions: number;
+  latest_at: string;
+  text: string | null;
+  post_date: string | null;
+  post_url: string | null;
+}
+
 export function getPostBreakdown(
   channelId: string,
   fromDate: string,
   toDate: string,
-): { message_id: number; views: number; forwards: number; reactions: number; latest_at: string }[] {
+  sortBy: string = 'views',
+): PostBreakdownRow[] {
+  const allowedSorts: Record<string, string> = {
+    views: 'views DESC',
+    forwards: 'forwards DESC',
+    reactions: 'reactions DESC',
+    date: 'post_date DESC',
+  };
+  const orderClause = allowedSorts[sortBy] ?? 'views DESC';
+
   return getDb()
     .prepare(
       `SELECT
-        message_id,
-        MAX(views) as views,
-        MAX(forwards) as forwards,
-        MAX(reactions) as reactions,
-        MAX(recorded_at) as latest_at
-       FROM post_snapshots
-       WHERE channel_id = ? AND recorded_at BETWEEN ? AND ?
-       GROUP BY message_id
-       ORDER BY views DESC`,
+        ps.message_id,
+        MAX(ps.views) as views,
+        MAX(ps.forwards) as forwards,
+        MAX(ps.reactions) as reactions,
+        MAX(ps.recorded_at) as latest_at,
+        p.text,
+        p.post_date,
+        p.post_url
+       FROM post_snapshots ps
+       LEFT JOIN posts p ON ps.channel_id = p.channel_id AND ps.message_id = p.message_id
+       WHERE ps.channel_id = ? AND ps.recorded_at BETWEEN ? AND ?
+       GROUP BY ps.message_id
+       ORDER BY ${orderClause}`,
     )
-    .all(channelId, fromDate, toDate) as {
-    message_id: number;
-    views: number;
-    forwards: number;
-    reactions: number;
-    latest_at: string;
-  }[];
+    .all(channelId, fromDate, toDate) as PostBreakdownRow[];
 }
 
 export function getLatestPostSnapshot(

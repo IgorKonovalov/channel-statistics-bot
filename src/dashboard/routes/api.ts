@@ -65,8 +65,9 @@ router.get('/api/posts', (req: Request, res: Response) => {
   const { from, to } = defaultDateRange();
   const fromParam = (req.query['from'] as string) ?? from;
   const toParam = (req.query['to'] as string) ?? to;
+  const sortBy = (req.query['sort'] as string) ?? 'views';
 
-  const data = getPostBreakdown(config.channelId, fromParam, toParam);
+  const data = getPostBreakdown(config.channelId, fromParam, toParam, sortBy);
   res.json(data);
 });
 
