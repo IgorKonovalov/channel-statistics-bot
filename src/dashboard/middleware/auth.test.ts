@@ -4,6 +4,7 @@ import type { Request, Response, NextFunction } from 'express';
 // Mock config before importing auth
 vi.mock('../../config', () => ({
   config: {
+    logLevel: 'silent',
     dashboard: {
       user: 'admin',
       password: 'secret',

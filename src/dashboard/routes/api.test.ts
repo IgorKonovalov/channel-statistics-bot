@@ -11,6 +11,7 @@ vi.mock('../../config', () => ({
     dashboard: { user: 'admin', password: 'secret', port: 3000 },
     dbPath: ':memory:',
     botToken: 'test',
+    logLevel: 'silent',
     collectionIntervalMs: 7200000,
   },
 }));

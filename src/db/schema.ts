@@ -1,4 +1,5 @@
 import type Database from 'better-sqlite3';
+import { logger } from '../logger';
 
 const MIGRATIONS = [
   {
@@ -62,7 +63,7 @@ export function runMigrations(db: Database.Database): void {
         db.exec(migration.up);
         db.prepare('INSERT INTO schema_version (version) VALUES (?)').run(migration.version);
       })();
-      console.log(`Migration ${migration.version} applied`);
+      logger.info({ version: migration.version }, 'Migration applied');
     }
   }
 }

@@ -1,0 +1,12 @@
+node_modules
+dist
+data
+.env
+.git
+.github
+.husky
+.claude
+docs
+coverage
+*.md
+*.test.ts

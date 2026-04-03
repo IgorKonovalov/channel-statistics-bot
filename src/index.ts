@@ -1,4 +1,5 @@
 import './config';
+import { logger } from './logger';
 import { getDb, closeDb } from './db/connection';
 import { runMigrations } from './db/schema';
 import { createBot } from './bot';
@@ -6,17 +7,17 @@ import { startCollector } from './services/collector';
 import { startDashboard } from './dashboard/server';
 
 async function main(): Promise<void> {
-  console.log('[app] Starting channel-statistics-bot...');
+  logger.info('Starting channel-statistics-bot...');
 
   // Initialize database
   const db = getDb();
   runMigrations(db);
-  console.log('[app] Database ready');
+  logger.info('Database ready');
 
   // Start bot (launch returns a promise that resolves when polling starts)
   const bot = createBot();
-  bot.launch().then(() => console.log('[app] Bot polling started'));
-  console.log('[app] Bot starting...');
+  bot.launch().then(() => logger.info('Bot polling started'));
+  logger.info('Bot starting...');
 
   // Start data collection
   const collector = startCollector(bot);
@@ -26,7 +27,7 @@ async function main(): Promise<void> {
 
   // Graceful shutdown
   const shutdown = (signal: string): void => {
-    console.log(`[app] Received ${signal}, shutting down...`);
+    logger.info({ signal }, 'Shutting down...');
     collector.stop();
     bot.stop(signal);
     closeDb();
@@ -38,6 +39,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-  console.error('[app] Fatal error:', error);
+  logger.fatal({ err: error }, 'Fatal error');
   process.exit(1);
 });

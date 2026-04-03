@@ -23,5 +23,6 @@ export const config = {
     password: requireEnv('DASHBOARD_PASSWORD'),
   },
   dbPath: optionalEnv('DB_PATH', './data/stats.db'),
+  logLevel: optionalEnv('LOG_LEVEL', 'info'),
   collectionIntervalMs: 2 * 60 * 60 * 1000, // 2 hours
 } as const;

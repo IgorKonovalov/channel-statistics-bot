@@ -1,5 +1,6 @@
 import { Telegraf } from 'telegraf';
 import { config } from '../config';
+import { logger } from '../logger';
 import { collectMemberCount } from '../bot/collectors/member-count';
 
 export function startCollector(bot: Telegraf): { stop: () => void } {
@@ -7,8 +8,9 @@ export function startCollector(bot: Telegraf): { stop: () => void } {
   collectMemberCount(bot);
   const memberInterval = setInterval(() => collectMemberCount(bot), config.collectionIntervalMs);
 
-  console.log(
-    `[collector] Started — member count every ${config.collectionIntervalMs / 60000}min, views via channel events`,
+  logger.info(
+    { intervalMin: config.collectionIntervalMs / 60000 },
+    'Collector started — member count on interval, views via channel events',
   );
 
   return {
