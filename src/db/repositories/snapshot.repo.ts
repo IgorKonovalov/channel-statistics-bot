@@ -50,10 +50,17 @@ export function getReactionsAggregated(
 ): { date: string; total_reactions: number }[] {
   return getDb()
     .prepare(
-      `SELECT date(recorded_at) as date, SUM(reactions) as total_reactions
-       FROM post_snapshots
-       WHERE channel_id = ? AND recorded_at BETWEEN ? AND ?
-       GROUP BY date(recorded_at)
+      `SELECT date(p.post_date) as date, SUM(ps.reactions) as total_reactions
+       FROM post_snapshots ps
+       JOIN posts p ON ps.channel_id = p.channel_id AND ps.message_id = p.message_id
+       WHERE ps.channel_id = ?
+         AND date(p.post_date) BETWEEN date(?) AND date(?)
+         AND ps.id IN (
+           SELECT id FROM post_snapshots ps2
+           WHERE ps2.channel_id = ps.channel_id AND ps2.message_id = ps.message_id
+           ORDER BY ps2.recorded_at DESC LIMIT 1
+         )
+       GROUP BY date(p.post_date)
        ORDER BY date ASC`,
     )
     .all(channelId, fromDate, toDate) as { date: string; total_reactions: number }[];
@@ -91,7 +98,7 @@ export function getPostBreakdown(
         p.post_url
        FROM post_snapshots ps
        LEFT JOIN posts p ON ps.channel_id = p.channel_id AND ps.message_id = p.message_id
-       WHERE ps.channel_id = ? AND ps.recorded_at BETWEEN ? AND ?
+       WHERE ps.channel_id = ? AND date(COALESCE(p.post_date, ps.recorded_at)) BETWEEN date(?) AND date(?)
        GROUP BY ps.message_id
        ORDER BY ${orderClause}`,
     )

@@ -13,6 +13,7 @@ vi.mock('../../config', () => ({
 
 import { setupTestDb, teardownTestDb } from '../test-helper';
 import { upsertChannel } from './channel.repo';
+import { upsertPost } from './post.repo';
 import {
   insertMemberSnapshot,
   getMemberSnapshots,
@@ -71,11 +72,13 @@ describe('snapshot.repo', () => {
   });
 
   describe('reactions aggregation', () => {
-    it('aggregates reactions by date', () => {
+    it('aggregates reactions by post date', () => {
+      upsertPost(CHANNEL_ID, 1, 'post 1', '2026-01-15T12:00:00.000Z', '', undefined);
+      upsertPost(CHANNEL_ID, 2, 'post 2', '2026-01-15T14:00:00.000Z', '', undefined);
       insertPostSnapshot(CHANNEL_ID, 1, 15);
       insertPostSnapshot(CHANNEL_ID, 2, 25);
 
-      const reactions = getReactionsAggregated(CHANNEL_ID, '2000-01-01', '2099-12-31');
+      const reactions = getReactionsAggregated(CHANNEL_ID, '2026-01-01', '2026-12-31');
       expect(reactions).toHaveLength(1);
       expect(reactions[0]!.total_reactions).toBe(40);
     });
@@ -83,11 +86,13 @@ describe('snapshot.repo', () => {
 
   describe('post breakdown', () => {
     it('returns per-post max values sorted by reactions desc', () => {
+      upsertPost(CHANNEL_ID, 1, 'post 1', '2026-01-15T12:00:00.000Z', '', undefined);
+      upsertPost(CHANNEL_ID, 2, 'post 2', '2026-01-15T14:00:00.000Z', '', undefined);
       insertPostSnapshot(CHANNEL_ID, 1, 5);
       insertPostSnapshot(CHANNEL_ID, 1, 10);
       insertPostSnapshot(CHANNEL_ID, 2, 3);
 
-      const breakdown = getPostBreakdown(CHANNEL_ID, '2000-01-01', '2099-12-31');
+      const breakdown = getPostBreakdown(CHANNEL_ID, '2026-01-01', '2026-12-31');
       expect(breakdown).toHaveLength(2);
       expect(breakdown[0]!.message_id).toBe(1);
       expect(breakdown[0]!.reactions).toBe(10);

@@ -3,6 +3,7 @@ import express from 'express';
 import { setupTestDb, teardownTestDb } from '../../db/test-helper';
 import { upsertChannel } from '../../db/repositories/channel.repo';
 import { insertMemberSnapshot, insertPostSnapshot } from '../../db/repositories/snapshot.repo';
+import { upsertPost } from '../../db/repositories/post.repo';
 
 // Mock config before importing routes
 vi.mock('../../config', () => ({
@@ -75,6 +76,7 @@ describe('API routes', () => {
   });
 
   it('GET /api/reactions returns aggregated reactions', async () => {
+    upsertPost(CHANNEL_ID, 1, 'post', new Date().toISOString(), '', undefined);
     insertPostSnapshot(CHANNEL_ID, 1, 15);
 
     const app = createApp();
@@ -87,6 +89,8 @@ describe('API routes', () => {
   });
 
   it('GET /api/posts returns per-post breakdown', async () => {
+    upsertPost(CHANNEL_ID, 1, 'post 1', new Date().toISOString(), '', undefined);
+    upsertPost(CHANNEL_ID, 2, 'post 2', new Date().toISOString(), '', undefined);
     insertPostSnapshot(CHANNEL_ID, 1, 10);
     insertPostSnapshot(CHANNEL_ID, 2, 20);
 
