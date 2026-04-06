@@ -76,7 +76,7 @@ export function createApiRouter(bot: Telegraf): Router {
 
     // Serve from cache if available
     if (fs.existsSync(cachePath)) {
-      res.type('image/jpeg').sendFile(cachePath);
+      res.type('image/jpeg').sendFile(path.resolve(cachePath));
       return;
     }
 
