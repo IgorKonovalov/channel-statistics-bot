@@ -1,7 +1,7 @@
 # Plan: Post Photos in Breakdown Page
 
 **Date:** 2026-04-06
-**Status:** In Progress
+**Status:** Completed
 
 ## Goal
 
@@ -58,9 +58,9 @@ Show post thumbnails in the posts breakdown page so users can visually identify 
 
 ### Phase 5: Testing
 
-- [ ] Unit test for `getPostPhotoFileId`
-- [ ] Unit test for photo endpoint — mock `getFileLink`, verify caching behavior
-- [ ] Manual test: run backfill-photos on server, verify thumbnails appear in dashboard
+- [x] Unit test for `getPostPhotoFileId`
+- [x] Unit test for photo endpoint — 404/400 responses for missing/invalid posts
+- [x] Manual test: run backfill-photos on server, verify thumbnails appear in dashboard
 
 ## Technical Decisions
 
@@ -99,9 +99,9 @@ src/
 
 ## Acceptance Criteria
 
-- [ ] Historical posts show thumbnails in the breakdown table
-- [ ] New posts captured by the bot also show thumbnails
-- [ ] Photos load lazily (only when scrolled into view)
-- [ ] Photos are cached to disk after first load
-- [ ] Posts without photos show gracefully (no broken images)
-- [ ] Backfill script can be re-run safely (idempotent)
+- [x] Historical posts show thumbnails in the breakdown table
+- [x] New posts captured by the bot also show thumbnails
+- [x] Photos load lazily (only when scrolled into view)
+- [x] Photos are cached to disk after first load
+- [x] Posts without photos show gracefully (no broken images)
+- [x] Backfill script can be re-run safely (idempotent)

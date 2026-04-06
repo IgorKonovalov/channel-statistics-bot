@@ -13,7 +13,7 @@ vi.mock('../../config', () => ({
 
 import { setupTestDb, teardownTestDb } from '../test-helper';
 import { upsertChannel } from './channel.repo';
-import { upsertPost } from './post.repo';
+import { upsertPost, getPostPhotoFileId } from './post.repo';
 import {
   insertMemberSnapshot,
   getMemberSnapshots,
@@ -81,6 +81,22 @@ describe('snapshot.repo', () => {
       const reactions = getReactionsAggregated(CHANNEL_ID, '2026-01-01', '2026-12-31');
       expect(reactions).toHaveLength(1);
       expect(reactions[0]!.total_reactions).toBe(40);
+    });
+  });
+
+  describe('getPostPhotoFileId', () => {
+    it('returns photo_file_id for a post with a photo', () => {
+      upsertPost(CHANNEL_ID, 1, 'post', '2026-01-15T12:00:00.000Z', '', 'AgACtest123');
+      expect(getPostPhotoFileId(CHANNEL_ID, 1)).toBe('AgACtest123');
+    });
+
+    it('returns null for a post without a photo', () => {
+      upsertPost(CHANNEL_ID, 1, 'post', '2026-01-15T12:00:00.000Z', '', undefined);
+      expect(getPostPhotoFileId(CHANNEL_ID, 1)).toBeNull();
+    });
+
+    it('returns null for a non-existent post', () => {
+      expect(getPostPhotoFileId(CHANNEL_ID, 999)).toBeNull();
     });
   });
 

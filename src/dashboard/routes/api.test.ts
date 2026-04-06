@@ -55,6 +55,27 @@ async function request(
   });
 }
 
+async function requestRaw(app: express.Express, path: string): Promise<{ status: number }> {
+  return new Promise((resolve, reject) => {
+    const server = app.listen(0, () => {
+      const addr = server.address();
+      if (!addr || typeof addr === 'string') {
+        server.close();
+        return reject(new Error('Failed to get address'));
+      }
+      fetch(`http://127.0.0.1:${addr.port}${path}`)
+        .then((res) => {
+          server.close();
+          resolve({ status: res.status });
+        })
+        .catch((err) => {
+          server.close();
+          reject(err);
+        });
+    });
+  });
+}
+
 describe('API routes', () => {
   beforeEach(() => {
     setupTestDb();
@@ -110,5 +131,26 @@ describe('API routes', () => {
     const app = createApp();
     const { body } = await request(app, '/api/members');
     expect(body).toEqual([]);
+  });
+
+  describe('GET /api/photo/:messageId', () => {
+    it('returns 404 for post without photo', async () => {
+      upsertPost(CHANNEL_ID, 1, 'post', new Date().toISOString(), '', undefined);
+      const app = createApp();
+      const { status } = await requestRaw(app, '/api/photo/1');
+      expect(status).toBe(404);
+    });
+
+    it('returns 404 for non-existent post', async () => {
+      const app = createApp();
+      const { status } = await requestRaw(app, '/api/photo/999');
+      expect(status).toBe(404);
+    });
+
+    it('returns 400 for invalid message ID', async () => {
+      const app = createApp();
+      const { status } = await requestRaw(app, '/api/photo/abc');
+      expect(status).toBe(400);
+    });
   });
 });
