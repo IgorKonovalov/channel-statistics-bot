@@ -3,7 +3,7 @@
  *
  * Usage: npx tsx scripts/list-recent-posts.ts
  */
-import { getDb } from "../src/db/database";
+import { getDb } from "../src/db/connection";
 
 const db = getDb();
 const posts = db
