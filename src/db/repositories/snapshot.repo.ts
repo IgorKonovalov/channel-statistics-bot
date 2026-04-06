@@ -50,16 +50,15 @@ export function getReactionsAggregated(
 ): { date: string; total_reactions: number }[] {
   return getDb()
     .prepare(
-      `SELECT date(p.post_date) as date, SUM(ps.reactions) as total_reactions
-       FROM post_snapshots ps
-       JOIN posts p ON ps.channel_id = p.channel_id AND ps.message_id = p.message_id
-       WHERE ps.channel_id = ?
-         AND date(p.post_date) BETWEEN date(?) AND date(?)
-         AND ps.id IN (
-           SELECT id FROM post_snapshots ps2
-           WHERE ps2.channel_id = ps.channel_id AND ps2.message_id = ps.message_id
-           ORDER BY ps2.recorded_at DESC LIMIT 1
-         )
+      `SELECT date(p.post_date) as date, SUM(max_reactions) as total_reactions
+       FROM (
+         SELECT ps.channel_id, ps.message_id, MAX(ps.reactions) as max_reactions
+         FROM post_snapshots ps
+         WHERE ps.channel_id = ?
+         GROUP BY ps.channel_id, ps.message_id
+       ) pm
+       JOIN posts p ON pm.channel_id = p.channel_id AND pm.message_id = p.message_id
+       WHERE date(p.post_date) BETWEEN date(?) AND date(?)
        GROUP BY date(p.post_date)
        ORDER BY date ASC`,
     )
