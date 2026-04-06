@@ -26,6 +26,7 @@
         <table>
           <thead>
             <tr>
+              <th class="th-photo"></th>
               <th>Post</th>
               <th class="text-right">Reactions</th>
               <th>Date</th>
@@ -94,7 +95,12 @@
               + '<div class="post-preview">' + preview + '</div>';
           }
 
+          var photoCell = p.has_photo
+            ? '<img src="/api/photo/' + p.message_id + '" loading="lazy" width="60" height="60" class="post-thumb" onerror="this.style.display=\\'none\\'">'
+            : '';
+
           return '<tr>'
+            + '<td class="td-photo">' + photoCell + '</td>'
             + '<td>' + postCell + '</td>'
             + '<td class="text-right">' + p.reactions.toLocaleString() + '</td>'
             + '<td class="text-muted">' + formatDate(p.post_date) + '</td>'

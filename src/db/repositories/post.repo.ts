@@ -35,3 +35,10 @@ export function getPost(channelId: string, messageId: number): Post | undefined 
     .prepare('SELECT * FROM posts WHERE channel_id = ? AND message_id = ?')
     .get(channelId, messageId) as Post | undefined;
 }
+
+export function getPostPhotoFileId(channelId: string, messageId: number): string | null {
+  const row = getDb()
+    .prepare('SELECT photo_file_id FROM posts WHERE channel_id = ? AND message_id = ?')
+    .get(channelId, messageId) as { photo_file_id: string | null } | undefined;
+  return row?.photo_file_id ?? null;
+}

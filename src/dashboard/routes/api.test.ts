@@ -17,13 +17,15 @@ vi.mock('../../config', () => ({
   },
 }));
 
-import { apiRouter } from './api';
+import { Telegraf } from 'telegraf';
+import { createApiRouter } from './api';
 
 const CHANNEL_ID = '-100123';
 
 function createApp() {
+  const bot = new Telegraf('fake-token');
   const app = express();
-  app.use(apiRouter);
+  app.use(createApiRouter(bot));
   return app;
 }
 

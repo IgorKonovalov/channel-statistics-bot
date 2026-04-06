@@ -72,6 +72,7 @@ export interface PostBreakdownRow {
   text: string | null;
   post_date: string | null;
   post_url: string | null;
+  has_photo: number;
 }
 
 export function getPostBreakdown(
@@ -94,7 +95,8 @@ export function getPostBreakdown(
         MAX(ps.recorded_at) as latest_at,
         p.text,
         p.post_date,
-        p.post_url
+        p.post_url,
+        CASE WHEN p.photo_file_id IS NOT NULL THEN 1 ELSE 0 END as has_photo
        FROM post_snapshots ps
        LEFT JOIN posts p ON ps.channel_id = p.channel_id AND ps.message_id = p.message_id
        WHERE ps.channel_id = ? AND date(COALESCE(p.post_date, ps.recorded_at)) BETWEEN date(?) AND date(?)

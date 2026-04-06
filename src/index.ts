@@ -27,7 +27,7 @@ async function main(): Promise<void> {
   const collector = startCollector(bot);
 
   // Start dashboard
-  await startDashboard();
+  await startDashboard(bot);
 
   // Graceful shutdown
   const shutdown = (signal: string): void => {
