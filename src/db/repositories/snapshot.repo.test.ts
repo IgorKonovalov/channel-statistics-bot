@@ -17,9 +17,7 @@ import {
   insertMemberSnapshot,
   getMemberSnapshots,
   insertPostSnapshot,
-  getViewsAggregated,
   getReactionsAggregated,
-  getForwardsAggregated,
   getPostBreakdown,
   getLatestPostSnapshot,
 } from './snapshot.repo';
@@ -58,13 +56,11 @@ describe('snapshot.repo', () => {
 
   describe('post snapshots', () => {
     it('inserts and retrieves latest post snapshot', () => {
-      insertPostSnapshot(CHANNEL_ID, 1, 50, 3, 10);
-      insertPostSnapshot(CHANNEL_ID, 1, 100, 5, 20);
+      insertPostSnapshot(CHANNEL_ID, 1, 10);
+      insertPostSnapshot(CHANNEL_ID, 1, 20);
 
       const latest = getLatestPostSnapshot(CHANNEL_ID, 1);
       expect(latest).toBeDefined();
-      expect(latest!.views).toBe(100);
-      expect(latest!.forwards).toBe(5);
       expect(latest!.reactions).toBe(20);
     });
 
@@ -74,21 +70,10 @@ describe('snapshot.repo', () => {
     });
   });
 
-  describe('views aggregation', () => {
-    it('aggregates views by date', () => {
-      insertPostSnapshot(CHANNEL_ID, 1, 50, 0, 0);
-      insertPostSnapshot(CHANNEL_ID, 2, 30, 0, 0);
-
-      const views = getViewsAggregated(CHANNEL_ID, '2000-01-01', '2099-12-31');
-      expect(views).toHaveLength(1);
-      expect(views[0]!.total_views).toBe(80);
-    });
-  });
-
   describe('reactions aggregation', () => {
     it('aggregates reactions by date', () => {
-      insertPostSnapshot(CHANNEL_ID, 1, 0, 0, 15);
-      insertPostSnapshot(CHANNEL_ID, 2, 0, 0, 25);
+      insertPostSnapshot(CHANNEL_ID, 1, 15);
+      insertPostSnapshot(CHANNEL_ID, 2, 25);
 
       const reactions = getReactionsAggregated(CHANNEL_ID, '2000-01-01', '2099-12-31');
       expect(reactions).toHaveLength(1);
@@ -96,31 +81,18 @@ describe('snapshot.repo', () => {
     });
   });
 
-  describe('forwards aggregation', () => {
-    it('aggregates forwards by date', () => {
-      insertPostSnapshot(CHANNEL_ID, 1, 0, 3, 0);
-      insertPostSnapshot(CHANNEL_ID, 2, 0, 7, 0);
-
-      const forwards = getForwardsAggregated(CHANNEL_ID, '2000-01-01', '2099-12-31');
-      expect(forwards).toHaveLength(1);
-      expect(forwards[0]!.total_forwards).toBe(10);
-    });
-  });
-
   describe('post breakdown', () => {
-    it('returns per-post max values sorted by views desc', () => {
-      insertPostSnapshot(CHANNEL_ID, 1, 50, 2, 5);
-      insertPostSnapshot(CHANNEL_ID, 1, 100, 4, 10);
-      insertPostSnapshot(CHANNEL_ID, 2, 200, 1, 3);
+    it('returns per-post max values sorted by reactions desc', () => {
+      insertPostSnapshot(CHANNEL_ID, 1, 5);
+      insertPostSnapshot(CHANNEL_ID, 1, 10);
+      insertPostSnapshot(CHANNEL_ID, 2, 3);
 
       const breakdown = getPostBreakdown(CHANNEL_ID, '2000-01-01', '2099-12-31');
       expect(breakdown).toHaveLength(2);
-      expect(breakdown[0]!.message_id).toBe(2);
-      expect(breakdown[0]!.views).toBe(200);
-      expect(breakdown[1]!.message_id).toBe(1);
-      expect(breakdown[1]!.views).toBe(100);
-      expect(breakdown[1]!.forwards).toBe(4);
-      expect(breakdown[1]!.reactions).toBe(10);
+      expect(breakdown[0]!.message_id).toBe(1);
+      expect(breakdown[0]!.reactions).toBe(10);
+      expect(breakdown[1]!.message_id).toBe(2);
+      expect(breakdown[1]!.reactions).toBe(3);
     });
 
     it('returns empty array for no data', () => {

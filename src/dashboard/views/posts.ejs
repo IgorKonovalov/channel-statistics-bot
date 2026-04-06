@@ -10,8 +10,6 @@
       <input type="date" id="dateTo">
       <label>Sort by</label>
       <select id="sortBy" onchange="loadPosts()">
-        <option value="views">Views</option>
-        <option value="forwards">Forwards</option>
         <option value="reactions">Reactions</option>
         <option value="date">Date</option>
       </select>
@@ -29,8 +27,6 @@
           <thead>
             <tr>
               <th>Post</th>
-              <th class="text-right">Views</th>
-              <th class="text-right">Forwards</th>
               <th class="text-right">Reactions</th>
               <th>Date</th>
             </tr>
@@ -100,8 +96,6 @@
 
           return '<tr>'
             + '<td>' + postCell + '</td>'
-            + '<td class="text-right">' + p.views.toLocaleString() + '</td>'
-            + '<td class="text-right">' + p.forwards.toLocaleString() + '</td>'
             + '<td class="text-right">' + p.reactions.toLocaleString() + '</td>'
             + '<td class="text-muted">' + formatDate(p.post_date) + '</td>'
             + '</tr>';

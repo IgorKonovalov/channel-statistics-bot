@@ -8,8 +8,6 @@ import { insertPostSnapshot, getLatestPostSnapshot } from '../../db/repositories
 interface ChannelPostLike {
   chat: { id: number; username?: string };
   message_id: number;
-  views?: number;
-  forward_count?: number;
   text?: string;
   caption?: string;
   date?: number;
@@ -20,16 +18,8 @@ function processPost(post: ChannelPostLike, reactions: number = 0): void {
   const chatId = post.chat.id.toString();
   if (chatId !== config.channelId) return;
 
-  const views = post.views ?? 0;
-  const forwards = post.forward_count ?? 0;
-
   const latest = getLatestPostSnapshot(config.channelId, post.message_id);
-  if (
-    latest &&
-    latest.views === views &&
-    latest.forwards === forwards &&
-    latest.reactions === reactions
-  ) {
+  if (latest && latest.reactions === reactions) {
     return;
   }
 
@@ -42,8 +32,8 @@ function processPost(post: ChannelPostLike, reactions: number = 0): void {
   const photoFileId = post.photo?.length ? post.photo[post.photo.length - 1]?.file_id : undefined;
 
   upsertPost(config.channelId, post.message_id, postText, postDate, postUrl, photoFileId);
-  insertPostSnapshot(config.channelId, post.message_id, views, forwards, reactions);
-  logger.info({ postId: post.message_id, views, forwards, reactions }, 'Post snapshot saved');
+  insertPostSnapshot(config.channelId, post.message_id, reactions);
+  logger.info({ postId: post.message_id, reactions }, 'Post snapshot saved');
 }
 
 export function registerPostListener(bot: Telegraf): void {
@@ -69,15 +59,8 @@ export function registerPostListener(bot: Telegraf): void {
 
     const totalReactions = reactionCount.reactions.reduce((sum, r) => sum + r.total_count, 0);
 
-    const latest = getLatestPostSnapshot(config.channelId, reactionCount.message_id);
     ensureChannel(config.channelId);
-    insertPostSnapshot(
-      config.channelId,
-      reactionCount.message_id,
-      latest?.views ?? 0,
-      latest?.forwards ?? 0,
-      totalReactions,
-    );
+    insertPostSnapshot(config.channelId, reactionCount.message_id, totalReactions);
     logger.info(
       { postId: reactionCount.message_id, reactions: totalReactions },
       'Reactions updated',

@@ -9,14 +9,6 @@
         <div class="kpi-value" id="kpiMembers">—</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Views (30d)</div>
-        <div class="kpi-value" id="kpiViews">—</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Avg Views / Post</div>
-        <div class="kpi-value" id="kpiAvgViews">—</div>
-      </div>
-      <div class="kpi">
         <div class="kpi-label">Reactions (30d)</div>
         <div class="kpi-value" id="kpiReactions">—</div>
       </div>
@@ -42,17 +34,6 @@
     </div>
 
     <div class="card">
-      <h2>Daily Views</h2>
-      <div class="loading" id="viewsLoading"><div class="spinner"></div></div>
-      <div class="chart-container" style="display:none;">
-        <canvas id="viewsChart"></canvas>
-      </div>
-      <div id="viewsEmpty" class="empty-state" style="display:none;">
-        No view data yet. Post something in the channel to start tracking.
-      </div>
-    </div>
-
-    <div class="card">
       <h2>Daily Reactions</h2>
       <div class="loading" id="reactionsLoading"><div class="spinner"></div></div>
       <div class="chart-container" style="display:none;">
@@ -60,17 +41,6 @@
       </div>
       <div id="reactionsEmpty" class="empty-state" style="display:none;">
         No reaction data yet.
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Daily Forwards</h2>
-      <div class="loading" id="forwardsLoading"><div class="spinner"></div></div>
-      <div class="chart-container" style="display:none;">
-        <canvas id="forwardsChart"></canvas>
-      </div>
-      <div id="forwardsEmpty" class="empty-state" style="display:none;">
-        No forward data yet.
       </div>
     </div>
 
@@ -143,31 +113,22 @@
       }
 
       async function loadKPIs() {
-        const [members, views, reactions] = await Promise.all([
+        const [members, reactions] = await Promise.all([
           fetch('/api/members?' + dateParams()).then(r => r.json()),
-          fetch('/api/views?' + dateParams()).then(r => r.json()),
           fetch('/api/reactions?' + dateParams()).then(r => r.json()),
         ]);
 
         const latestMembers = members.length > 0 ? members[members.length - 1].count : 0;
-        const totalViews = views.reduce((sum, d) => sum + d.total_views, 0);
         const totalReactions = reactions.reduce((sum, d) => sum + d.total_reactions, 0);
 
-        // Avg views per post: total views / number of days with data (rough approximation)
-        const avgViews = views.length > 0 ? Math.round(totalViews / views.length) : 0;
-
         document.getElementById('kpiMembers').textContent = latestMembers.toLocaleString();
-        document.getElementById('kpiViews').textContent = totalViews.toLocaleString();
-        document.getElementById('kpiAvgViews').textContent = avgViews.toLocaleString();
         document.getElementById('kpiReactions').textContent = totalReactions.toLocaleString();
       }
 
       function loadAll() {
         loadKPIs();
         loadChart('/api/members', 'membersChart', 'membersEmpty', 'membersLoading', 'Members', 'count', '#3b82f6');
-        loadChart('/api/views', 'viewsChart', 'viewsEmpty', 'viewsLoading', 'Views', 'total_views', '#10b981');
         loadChart('/api/reactions', 'reactionsChart', 'reactionsEmpty', 'reactionsLoading', 'Reactions', 'total_reactions', '#f59e0b');
-        loadChart('/api/forwards', 'forwardsChart', 'forwardsEmpty', 'forwardsLoading', 'Forwards', 'total_forwards', '#8b5cf6');
       }
 
       function applyDateRange() {

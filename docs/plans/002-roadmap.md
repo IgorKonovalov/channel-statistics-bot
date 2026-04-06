@@ -56,6 +56,9 @@ MVP is complete (plan 001). The bot collects member count (every 2h) and post vi
 
 ### ~~Plan 006: Multi-Channel Support~~ — DROPPED
 
+### ~~Plan 009: Periodic View Polling~~ — DROPPED
+Telegram Bot API doesn't expose view counts in events or forwarded messages. GramJS can fetch them but requires user-session auth (phone + 2FA), making it impractical for automated polling. View data comes from one-time backfill only.
+
 ### Plan 007: Production Hardening
 **Priority: Medium** — reliability for long-running deployment
 

@@ -10,7 +10,7 @@ export function startCollector(bot: Telegraf): { stop: () => void } {
 
   logger.info(
     { intervalMin: config.collectionIntervalMs / 60000 },
-    'Collector started — member count on interval, views via channel events',
+    'Collector started — member count on interval, reactions via channel events',
   );
 
   return {

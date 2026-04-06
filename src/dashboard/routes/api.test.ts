@@ -74,21 +74,8 @@ describe('API routes', () => {
     expect(arr[0]).toHaveProperty('count', 100);
   });
 
-  it('GET /api/views returns aggregated views', async () => {
-    insertPostSnapshot(CHANNEL_ID, 1, 50, 0, 0);
-    insertPostSnapshot(CHANNEL_ID, 2, 30, 0, 0);
-
-    const app = createApp();
-    const { status, body } = await request(app, '/api/views');
-
-    expect(status).toBe(200);
-    const arr = body as { date: string; total_views: number }[];
-    expect(arr).toHaveLength(1);
-    expect(arr[0]).toHaveProperty('total_views', 80);
-  });
-
   it('GET /api/reactions returns aggregated reactions', async () => {
-    insertPostSnapshot(CHANNEL_ID, 1, 0, 0, 15);
+    insertPostSnapshot(CHANNEL_ID, 1, 15);
 
     const app = createApp();
     const { status, body } = await request(app, '/api/reactions');
@@ -99,30 +86,18 @@ describe('API routes', () => {
     expect(arr[0]).toHaveProperty('total_reactions', 15);
   });
 
-  it('GET /api/forwards returns aggregated forwards', async () => {
-    insertPostSnapshot(CHANNEL_ID, 1, 0, 7, 0);
-
-    const app = createApp();
-    const { status, body } = await request(app, '/api/forwards');
-
-    expect(status).toBe(200);
-    const arr = body as { date: string; total_forwards: number }[];
-    expect(arr).toHaveLength(1);
-    expect(arr[0]).toHaveProperty('total_forwards', 7);
-  });
-
   it('GET /api/posts returns per-post breakdown', async () => {
-    insertPostSnapshot(CHANNEL_ID, 1, 100, 3, 10);
-    insertPostSnapshot(CHANNEL_ID, 2, 200, 5, 20);
+    insertPostSnapshot(CHANNEL_ID, 1, 10);
+    insertPostSnapshot(CHANNEL_ID, 2, 20);
 
     const app = createApp();
     const { status, body } = await request(app, '/api/posts');
 
     expect(status).toBe(200);
-    const arr = body as { message_id: number; views: number }[];
+    const arr = body as { message_id: number; reactions: number }[];
     expect(arr).toHaveLength(2);
-    expect(arr[0]!.message_id).toBe(2); // sorted by views desc
-    expect(arr[0]!.views).toBe(200);
+    expect(arr[0]!.message_id).toBe(2); // sorted by reactions desc
+    expect(arr[0]!.reactions).toBe(20);
   });
 
   it('returns empty arrays when no data', async () => {

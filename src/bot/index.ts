@@ -3,7 +3,7 @@ import { config } from '../config';
 import { logger } from '../logger';
 import { errorHandler } from './middleware/error-handler';
 import { loggerMiddleware } from './middleware/logger';
-import { registerPostListener } from './collectors/post-views';
+import { registerPostListener } from './collectors/post-reactions';
 
 export function createBot(): Telegraf {
   const bot = new Telegraf(config.botToken);
