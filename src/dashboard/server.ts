@@ -5,6 +5,7 @@ import { config } from '../config';
 import { logger } from '../logger';
 import { healthRouter } from './routes/health';
 import { basicAuth } from './middleware/auth';
+import { rateLimit } from './middleware/rate-limit';
 import { pageRouter } from './routes/index';
 import { createApiRouter } from './routes/api';
 
@@ -15,6 +16,7 @@ export function createDashboard(bot: Telegraf): express.Express {
   app.set('views', path.join(__dirname, 'views'));
 
   app.use(healthRouter);
+  app.use(rateLimit());
   app.use(basicAuth);
   app.use(pageRouter);
   app.use(createApiRouter(bot));

@@ -4,6 +4,7 @@ import { getDb, closeDb } from './db/connection';
 import { runMigrations } from './db/schema';
 import { createBot } from './bot';
 import { startCollector } from './services/collector';
+import { startBackupSchedule } from './services/db-backup';
 import { startDashboard } from './dashboard/server';
 
 async function main(): Promise<void> {
@@ -26,6 +27,9 @@ async function main(): Promise<void> {
   // Start data collection
   const collector = startCollector(bot);
 
+  // Start DB backup schedule
+  const backup = startBackupSchedule();
+
   // Start dashboard
   await startDashboard(bot);
 
@@ -33,6 +37,7 @@ async function main(): Promise<void> {
   const shutdown = (signal: string): void => {
     logger.info({ signal }, 'Shutting down...');
     collector.stop();
+    backup.stop();
     bot.stop(signal);
     closeDb();
     process.exit(0);

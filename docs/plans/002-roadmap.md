@@ -64,9 +64,9 @@ Telegram Bot API doesn't expose view counts in events or forwarded messages. Gra
 
 - [x] Add structured logging (replace `console.log` with pino or winston) — pino already in use
 - [x] Add health check endpoint (`/health`) for Docker/monitoring — already exists
-- [ ] Add graceful error recovery for Telegram API failures (retry with backoff)
-- [ ] Add DB backup strategy (periodic SQLite `.backup()` to a file)
-- [ ] Add rate limit middleware on dashboard routes
+- [x] Add graceful error recovery for Telegram API failures (retry with backoff) — `withRetry` utility already in use
+- [x] Add DB backup strategy (periodic SQLite `.backup()` to a file) — daily backups, 7-day retention
+- [x] Add rate limit middleware on dashboard routes — 100 req/min per IP
 - [x] Review Docker setup: non-root user, memory limits, log rotation — Dockerfile uses non-root `app` user, log rotation configured in docker-compose
 - [x] Add deploy script — CI/CD via GitHub Actions replaces manual deploy
 
