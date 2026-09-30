@@ -3,6 +3,10 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
+    # Cap memory so a spike in this bot can't OOM-kill a sibling on the shared
+    # 1 GB droplet. 256m is headroom over the observed ~90 MiB steady state;
+    # check `docker stats` before lowering it. Honoured by standalone compose.
+    mem_limit: 256m
     ports:
       - '${DASHBOARD_PORT:-3000}:3000'
     volumes:
